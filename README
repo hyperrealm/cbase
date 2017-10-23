@@ -1,0 +1,14 @@
+
+This package may not compile with older versions of gcc. Version 3.3
+or later is highly recommended. This is especially true on OS X.
+
+To generate a nice printable manual, issue the command `make pdf'.
+
+This package is no longer being actively developed, as I've switched
+to C++ for all non-trivial systems software development. All
+forseeable future releases of cbase will be for bugfixes only. If you
+are interested in taking ownership of this package and developing it
+further, please contact me by leaving me feedback at
+http://www.hyperrealm.com/
+
+

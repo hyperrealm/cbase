@@ -1,0 +1,262 @@
+2013-07-27  Mark Lindner  <markl@neuromancer>
+
+	* lib/xml.c - Fixed some memory leaks (reported by Richard Perini),
+	  added C_xml_get_first_child_named().
+	* doc/cbase.texi - Documentation updates
+
+2012-09-16  Mark Lindner  <markl@neuromancer>
+
+	* lib/strings.c - Fixed off-by-1 error in C_string_copy()
+	  (reported by Guo Leaveye)
+	* lib/dstring.c - bugfix in C_dstring_gets() (reported by Guo Leaveye)
+
+2012-09-15  Mark Lindner  <markl@neuromancer>
+
+	* <multiple> - updated to newer versions of autotools; moved
+	  helper scripts into aux-build subdirectory and *.m4 files into m4
+	  subdirectory
+	* <multiple> - bump verison numbers
+	* doc/cbase.texi - documentation updates
+	* configure.ac, config.h.in -
+	* lib/Makefile.am - bump library version
+	* lib/exec.c - fix compiler warning
+	* lib/dstring.c - fix bug in C_dstring_seek(); incorrectly returned
+	  FALSE if 'where' was 0 (reported by Guo Leaveye)
+	* lib/filedesc.c - fix compile error on OS X; fix 'type punned pointer'
+	  compiler warnings
+	* configure.ac, config.h.in - added test for constant CMSG_SPACE
+
+2010-04-28  Mark Lindner  <markl@neuromancer>
+
+	* <multiple> - fixed copyright headers; whitespace cleanup; fixed some
+	  compiler warnings
+
+2009-05-23  Mark Lindner  <markl@neuromancer>
+
+	* sched.c - fixed bug in scheduler loop; was sleeping in 1-second
+	  intervals rather than 1-minute intervals
+	* configure.ac - fixed broken getXXXXbyYYYY_r tests
+	* config.h, ltmain.sh, config.h.in, aclocal.m4 - updated to latest
+	  versions of autoconf/automake/libtool
+
+2008-07-30  Mark Lindner  <markl@neuromancer>
+
+	* strings.c, util.h, cbase.texi - added C_string_compare_len()
+
+2007-09-05  Mark Lindner  <markl@neuromancer>
+
+	* vector.c, data.h - added C_vector_contains()
+
+2007-09-04  Mark Lindner  <markl@neuromancer>
+
+	* linklist.c, data.h, cbase.texi - added C_linklist_isend(),
+	  C_linklist_isend_r(),
+	  C_linklist_move_end(); updated C_linklist_move_r() for move-to-end;
+	  fixed implementation of C_linklist_istail() and
+	  C_linklist_istail_r(); renamed C_linklist_push() to
+	  C_linklist_prepend() and C_linklist_enqueue() to C_linklist_append(),
+	  and documented the two functions
+	* hashtab.c, sched.c - call C_linklist_isend() instead of
+	  C_linlist_istail()
+
+2007-08-31  Mark Lindner  <markl@neuromancer>
+
+	* file.c, system.h - fix bug in __C_file_descend() that caused
+	  segfault; add C_file_isdir(), C_file_isfile(), and C_file_ispipe()
+
+2007-08-28  Mark Lindner  <markl@neuromancer>
+
+	* sockctl.c, pty.c, sem.c - fix compiler warnings
+	* vector.c, hashtab.c, util.h, strings.c, system.h - change some funcs
+	  to use size_t instead of uint_t
+
+2007-08-25  Mark Lindner  <markl@neuromancer>
+
+	* util.h - fix C_newstr() to allocate one extra byte for the NUL
+	* strings.c - added C_string_va_make(); added C_string_rchop();
+	  fixed calls to C_newstr()
+	* tty.c, system.h - added C_tty_getsize()
+	* cbase.texi - doc updates
+
+2007-08-10  Mark Lindner  <markl@neuromancer>
+
+	* <multiple> - the great renaming. CFL becomes cbase.
+
+2007-05-09  Mark Lindner  <markl@neuromancer>
+
+	* io.c - bugfix in C_io_gets()
+	* defs.h - bugfix in C_offsetof() macro
+
+2007-02-08  Mark Lindner  <markl@neuromancer>
+
+	* file.c - fix segmentation fault in __C_file_descend
+	* configure.ac - bump version number
+
+2006-10-03  Mark Lindner  <markl@neuromancer>
+
+	* timer.c - replaced obsolete CLK_TCK macro reference with call to
+	  sysconf() to get the corresponding value; solves build error on
+	  systems that have removed CLK_TCK entirely
+
+2006-08-27  Mark Lindner  <markl@neuromancer>
+
+	* cfl.h - added missing guard #define
+
+2006-06-09  Mark Lindner  <markl@neuromancer>
+
+	* socktcl.c - finished implementation of nonblocking (timeout)
+	  C_socket_connect(); existing implementation was partial and contained
+	  a bug
+	* net.h - fix typo
+	* cerrno.h - renumbered errors to remove gaps
+	* error.c, system.h - added C_error_string()
+	* <multiple> - updated comment headers and removed old CVS history
+	* sched.c - fix clock drift problem
+
+2006-04-15  Mark Lindner  <markl@neuromancer>
+
+	* fortune.c - minor bugfix
+	* random.c, configure.ac - use sranddev() if available; BSD's
+	  random number generator is very bad
+
+2006-04-13  Mark Lindner  <markl@neuromancer>
+
+	* <multiple> - added pkgconfig support
+
+2006-02-20  Mark Lindner  <markl@neuromancer>
+
+	* memfile.c - bug fix
+	* cfl.texi - typo correction
+
+2005-12-13  Mark Lindner  <markl@neuromancer>
+
+	* mempool.c - check for malloc failure in mempool_create()
+	* sockctl.c, sockio.c, netcommon.h, configure.ac - check for presence
+	  of socklen_t type, and if available, use it (fixes compiler warnings)
+	* timer.c - Darwin defines CLK_TCK in limits.h now.
+
+2005-06-11  Mark Lindner  <markl@neuromancer>
+
+	* darray.c - bug fix (submitted by Mitsuru Iwasaki)
+	* system.h, mempool.c - added mempool functions
+	* cfl.texi - updated documentation
+	* filedesc.c, pty.c, httpsrv.c - fixed compiler warnings
+
+2004-02-27  Mark Lindner  <markl@neuromancer>
+
+	* file.c - fixed some compile errors
+	* strings.c, cfl/util.h - added C_String_tokenize()
+	* io.c, xml.c, sockctl.c, getXXbyYY.c - removed unused variables
+	* sched.c - added some missing #ifdef's
+
+2003-11-01  Mark Lindner  <markl@neuromancer>
+
+	* data.h, strheap.c - removed string heap functions
+
+2003-10-31  Mark Lindner  <markl@neuromancer>
+
+	* memory.c, system.h - added memory allocation hook functions
+
+2003-10-28  Mark Lindner  <markl@neuromancer>
+
+	* cfl.texi - added a symbol index
+
+2003-10-27  Mark Lindner  <markl@neuromancer>
+
+	* httpsrv.c, http.h - new micro HTTP server implementation
+
+2003-10-21  Mark Lindner  <markl@neuromancer>
+
+	* file.c - NUL-terminate data read by C_file_load()
+
+2003-10-20  Mark Lindner  <markl@neuromancer>
+
+	* configure.ac, system.c - check for presence of getgrnam_r(), which
+	  as of this writing is missing on uClinux
+
+2003-10-20  Mark Lindner  <markl@neuromancer>
+
+	* strbuf.c, util.h - added C_strbuffer_strlen() function
+
+2003-10-19  Mark Lindner  <markl@neuromancer>
+
+	* socket.c, net.h - added hook field to socket structure, and
+	  C_socket_get/set_userdata() macros to access it; added timeout
+	  field to socket structure, and C_socket_get/set_timeout() macros
+	  to access it; added C_socket_sendline() and C_socket_recvline()
+	  functions and deprecated C_socket_writeline(), C_socket_readline(),
+	  C_socket_wl(), and C_socket_rl().
+	* xml.c - bug fixes in C_xml_document_destroy() and supporting
+	  functions
+	* defs.h - Added missing C_lengthof() macro
+	* netinfo.c - fixes for corrected return values from getXXbyYY_r
+	  functions
+
+2003-10-17  Mark Lindner  <markl@neuromancer>
+
+	* xml.c, xml.h - added C_xml_element_get_first_child()
+	* getXXbyYY.c, getXXbyYY.h - corrected return values to be POSIX-style
+	  int, not pointer to result structure
+
+2003-10-15  Mark Lindner  <markl@neuromancer>
+
+	* <multiple> - cleanup to remove unneeded #ifdef's and #define's,
+	  particularly for Solaris
+	* filedesc.c, ipc.h - new file descriptor passing functions
+	* memory.c, util.h - added a 'datalen' member to the c_buffer_t
+	  structure
+
+2003-10-01  Mark Lindner  <markl@neuromancer>
+
+	* io.c, system.h - bug fix in C_io_getline (set *len to 0 if an
+	  EOF is encountered before any characters read), and added
+	  C_io_getline_buf().
+
+2003-06-21  Mark Lindner  <markl@neuromancer>
+
+	* system.h, byteord.c, fortune.c, netcommon.h - add #include of
+	  inttypes.h, and remove #include of non-portable stdint.h
+	* byteord.c - fixed compilation problem on Linux (thanks to
+	  Moritz Barsnick for reporting this and the above problem).
+
+2003-05-06  Mark Lindner  <markl@neuromancer>
+
+	* getXXbyYY.c - Fixed padding calculation
+	* byteord.c - New byte order routines
+	* defs.h - Added terminal attribute #defines
+	* timer.c - Added calculations for elapsed (real) time
+	* debug.c - Added severity parameter, terminal attribute support
+	* util.h - New function, macro declarations
+	* log.c - New logging functions
+
+2003-03-14  Mark Lindner  <markl@neuromancer>
+
+	* cfl.texi - documentation updates & corrections
+
+2003-03-10  Mark Lindner  <markl@neuromancer>
+
+	* getXXbyYY_r.c, getXXbyYY_r.h - Abstraction layer for
+	  gethostbyname_r(), gethostbyaddr_r(), getservbyname_r(),
+	  getservbyport_r().
+	* netinfo.c, sockctl.c - Modified all calls to getXXXXbyYYYY_r()
+	  functions to use new abstraction layer.
+	* debug.c, error.c, io.c - Wrapped calls to flockfile() and
+	  funlockfile() in #ifdef for those systems that don't have these
+	  functions.
+	* pty.c - Rewritten to be more portable and thread-safe.
+	* sem.c - Rewritten to provide a counting semaphore rather than a
+	  binary semaphore interface.
+	* tty.c - Renamed C_tty_generic() to C_tty_sane().
+	* strbuf.c - Minor code cleanup.
+	* strings.c - Various bugfixes.
+	* system.c - Minor code cleanup and bugfixes.
+	* exec.c, system.h - added P_exec_va_run_cwd().
+
+2003-01-26  Mark Lindner  <markl@neuromancer>
+
+	* sched.c - Modified the scheduler functions to work under Linux by
+	  using nanosleep() instead of an interval timer. Add C_sched_poll()
+	  so that the scheduler is usable in a single-threaded application.
+	* xml.c - Eliminated static read buffer; allocate (a smaller) buffer on
+	  the stack instead.
+	* fortune.c - Eliminated static pathname buffer.

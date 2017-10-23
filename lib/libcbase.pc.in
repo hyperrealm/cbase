@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: cbase
+Description: C Foundation Library
+Version: @VERSION@
+URL: http://www.hyperrealm.com/main.php?s=cbase
+Requires:
+Conflicts:
+Libs: -L${libdir} -lcbase
+Libs.private: @LIBS@ 
+Cflags: -I${includedir}
