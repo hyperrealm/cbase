@@ -373,7 +373,7 @@ char **C_string_valist2vec(const char *first, va_list vp, size_t *len)
   c_vector_t *vec;
   char *p;
 
-  if(!vp)
+  if(vp == NULL)
     return(NULL);
 
   vec = C_vector_start(C_STRING_BLOCKSZ);
