@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -67,7 +67,14 @@ int C_exec_run_cwd(char **argv, int fdin, int fdout, c_bool_t waitf,
       dup2(((fdout < 0) ? fdz : fdout), STDERR_FILENO);
 
       if(cwd)
+      {
         x = chdir(cwd);
+        if(x != 0)
+        {
+          perror("chdir");
+          exit(EXIT_FAILURE);
+        }
+      }
 
       execvp(*argv, argv);
       if(fdz >= 0)

@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -70,10 +70,11 @@ c_pty_t *C_pty_create(void)
 {
   int mfd, sfd;
   c_pty_t *pty;
-  char pts_name[11] = "", *pts = NULL;
+  char pts_name[11] = "";
 
 #if defined HAVE_STROPTS_H
 
+  char *pts = NULL;
   c_bool_t ok = FALSE;
 
   /* open master */
@@ -124,8 +125,6 @@ c_pty_t *C_pty_create(void)
     return(NULL);
   }
 
-  pts = pts_name;
-
 #else /* fall back on the old crude BSD way */
 
   if((mfd = __C_pty_open_master_BSD(pts_name)) < 0)
@@ -139,8 +138,6 @@ c_pty_t *C_pty_create(void)
     C_error_set_errno(C_EOPEN);
     return(NULL);
   }
-
-  pts = pts_name;
 
 #endif
 
@@ -215,8 +212,17 @@ static int __C_pty_open_slave_BSD(int fdm, char *pts_name)
     gid = -1; /* group tty is not in the group file */
 
   /* following two functions don't work unless we're root */
-  chown(pts_name, getuid(), gid);
-  chmod(pts_name, S_IRUSR | S_IWUSR | S_IWGRP);
+  if(chown(pts_name, getuid(), gid) != 0)
+  {
+    close(fdm);
+    return(-1);
+  }
+  
+  if(chmod(pts_name, S_IRUSR | S_IWUSR | S_IWGRP) != 0)
+  {
+    close(fdm);
+    return(-1);
+  }
 
   if((fds = open(pts_name, O_RDWR)) < 0)
   {

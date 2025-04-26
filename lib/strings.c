@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -372,9 +372,6 @@ char **C_string_valist2vec(const char *first, va_list vp, size_t *len)
 {
   c_vector_t *vec;
   char *p;
-
-  if(!vp)
-    return(NULL);
 
   vec = C_vector_start(C_STRING_BLOCKSZ);
   if(first)

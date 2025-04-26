@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -299,9 +299,9 @@ static void *__C_httpsrv_worker(void *arg)
 
       first = FALSE;
 
-      strncpy(verb, vec[0], sizeof(verb));
-      strncpy(uri, vec[1], sizeof(uri));
-      strncpy(proto, vec[2], sizeof(proto));
+      strncpy(verb, vec[0], sizeof(verb) - 1);
+      strncpy(uri, vec[1], sizeof(uri) - 1);
+      strncpy(proto, vec[2], sizeof(proto)- 1);
 
       C_free_vec(vec);
     }

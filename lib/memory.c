@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -67,8 +67,13 @@ void *C_mem_manage(void *p, size_t n, c_bool_t clearf)
   {
     if((r = realloc(p, n)))
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+      
       if(__C_mem_alloc_hook)
         __C_mem_alloc_hook(p, r, n);
+
+#pragma GCC diagnostic pop
 
       if(clearf)
         memset(r, 0, n);

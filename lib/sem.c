@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -118,7 +118,7 @@ int C_sem_value(c_sem_t *sem)
 
   r = sem_getvalue(sem->sem, &val);
 
-  return((errno == 0) ? val : -1);
+  return((r == 0) ? val : -1);
 }
 
 /* end of source file */

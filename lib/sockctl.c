@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -343,7 +343,7 @@ c_bool_t C_socket_connect(c_socket_t *s, const char *host, in_port_t port)
 {
   int flags = 0, err = 0;
   socklen_t sz = (socklen_t)sizeof(struct sockaddr_in);
-  fd_set rfd, wfd;
+  fd_set rfd;
   c_bool_t ok = FALSE;
 
   if(!s || !host)
@@ -374,7 +374,6 @@ c_bool_t C_socket_connect(c_socket_t *s, const char *host, in_port_t port)
 
   FD_ZERO(&rfd);
   FD_SET(s->sd, &rfd);
-  wfd = rfd;
 
   if(s->conn_timeout > 0)
   {

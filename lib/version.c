@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -33,7 +33,7 @@
 static const char *__c_version = PACKAGE_VERSION;
 
 static const char *__c_info = PACKAGE_STRING \
-  " - (C) 1994-2014 Mark A Lindner - " PACKAGE_BUGREPORT;
+  " - (C) 1994-2025 Mark A Lindner - " PACKAGE_BUGREPORT;
 
 static const char *__c_options[] = {
 #ifdef THREADED_LIBRARY

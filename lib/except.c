@@ -26,78 +26,63 @@
 
 /* System headers */
 
+#include <assert.h>
 
 /* Local headers */
 
-#include "cbase/defs.h"
+#include "cbase/except.h"
 #include "cbase/system.h"
 
-/* Functions */
+/* File scope variables */
 
-c_mempool_t *C_mempool_create(size_t size)
+static C_except_context_t *__C_top_context = NULL;
+
+/* External functions */
+
+C_except_context_t *C_except_context_push(void)
 {
-  c_mempool_t *pool = C_new(c_mempool_t);
+  C_except_context_t *context = C_new(C_except_context_t);
+  context->prev = __C_top_context;
+  __C_top_context = context;
+  return __C_top_context;
+}
 
-  pool->size = size;
-  pool->base = (void *)C_newb(size);
-  if(! pool->base)
+/*
+ */
+
+C_except_context_t *C_except_context_top(int exception,
+                                         const char *file, int line)
+{
+  C_assert(__C_top_context != NULL); // assert if throw without try
+
+  if(__C_top_context != NULL)
   {
-    C_free(pool);
-    return(NULL);
+    __C_top_context->exception = exception;
+    __C_top_context->file = file;
+    __C_top_context->line = line;
   }
 
-  pool->pos = 0;
-
-  return(pool);
+  return __C_top_context;
 }
 
 /*
  */
 
-void C_mempool_destroy(c_mempool_t *pool)
+int C_except_context_pop(void)
 {
-  if(! pool)
-    return;
+  C_assert(__C_top_context != NULL); // assert if catch without try
 
-  C_free(pool->base);
-  C_free(pool);
-}
+  C_except_context_t *top = __C_top_context;
+  int exception = 0;
 
-/*
- */
+  if(top)
+  {
+    exception = top->exception;
+    __C_top_context = top->prev;
+    C_free(top);
+  }
 
-void *C_mempool_alloc(c_mempool_t *pool, size_t size)
-{
-  void *p;
-  size_t rsz;
-  int r;
-
-  if(!pool || (size < 1))
-    return(NULL);
-
-  p = pool->base + pool->pos;
-  rsz = size;
-  r = (size % sizeof(void *));
-  if(r != 0)
-    rsz += (sizeof(void *) - r);
-
-  if(C_mempool_avail(pool) < rsz)
-    return(NULL);
-
-  pool->pos += rsz;
-
-  return(p);
-}
-
-/*
- */
-
-size_t C_mempool_avail(c_mempool_t *pool)
-{
-  if(! pool)
-    return(0);
-
-  return(pool->size - pool->pos);
+  return(exception);
 }
 
 /* end of source file */

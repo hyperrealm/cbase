@@ -1,3 +1,12 @@
+2025-04-26  Mark Lindner  <markl@neuromancer>
+
+	* Removed XML functions, fortune database functions, and HTTP server
+	  functions.
+	* Added rudimentary exception handling functionality.
+	* Fixed various build errors and build warnings raised by modern
+	  compilers.
+	* Updated autotools build files to the latest available versions.
+
 2013-07-27  Mark Lindner  <markl@neuromancer>
 
 	* lib/xml.c - Fixed some memory leaks (reported by Richard Perini),

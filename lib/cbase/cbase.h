@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -26,13 +26,12 @@
 #include <cbase/defs.h>
 #include <cbase/cerrno.h>
 #include <cbase/data.h>
-#include <cbase/fortune.h>
+#include <cbase/except.h>
 #include <cbase/ipc.h>
 #include <cbase/net.h>
 #include <cbase/system.h>
 #include <cbase/sched.h>
 #include <cbase/util.h>
-#include <cbase/xml.h>
 #include <cbase/version.h>
 
 #endif /* __cbase_h */

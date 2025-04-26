@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -289,7 +289,7 @@ char *C_system_get_term(void)
 c_bool_t C_system_passwd_validate(const char *plaintext,
                                   const char *ciphertext)
 {
-  char salt[2], *c;
+  char salt[3], *c;
 
   strncpy(salt, ciphertext, 2);
 

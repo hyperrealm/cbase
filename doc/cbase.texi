@@ -6,8 +6,8 @@
 @setfilename cbase.info
 @settitle cbase
 
-@set edition 1.3.7
-@set update-month May 2014
+@set edition 1.4
+@set update-month Apr 2025
 @set update-date 25 @value{update-month}
 @set subtitle-text A C Foundation Library
 @set author-text Mark A.@: Lindner
@@ -36,7 +36,7 @@
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1994-2014  Mark A Lindner
+Copyright @copyright{} 1994-2025  Mark A Lindner
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -77,11 +77,10 @@ Version @value{edition}<br>
 * System Functions::
 * Utility Functions::
 * Data Structure Functions::
-* XML Data Manipulation Functions::
 * Real-Time Scheduler Functions::
 * IPC Functions::
 * Networking Functions::
-* Miscellaneous Functions::
+* Library Information Functions::
 * References::
 * License::
 * Function Index::
@@ -96,7 +95,6 @@ Version @value{edition}<br>
 * API Conventions::
 * Reentrancy and Threading::
 * Portability Notes::
-* Historical Notes::
 @end menu
 @chapter Overview of cbase
 
@@ -144,13 +142,6 @@ And similarly, to link with the multi-threaded version:
 
 @example
 gcc file1.o file2.o -o myprogram -lcbase_mt
-@end example
-
-If your program uses the XML functions, it will also need to be linked with
-the @i{expat} library, e.g.:
-
-@example
-gcc file1.o file2.o -o myprogram -lcbase -lexpat
 @end example
 
 If your program uses the networking functions, you may need to
@@ -272,7 +263,7 @@ library are reentrant. This means that they can be safely accessed from
 concurrent threads without the need for explicit synchronization.
 
 However, calls to functions which manipulate data structures (such as
-linked lists, hash tables, and XML documents) must be synchronized by
+linked lists, hash tables, and string buffers) must be synchronized by
 the caller in such a way that only one thread is modifying the data
 structure at any given time. For example, an insert into a linked list
 by one thread with a concurrent insert (or some other operation) on the
@@ -284,19 +275,14 @@ a reader (a thread that is accessing but not modifying the data
 structure) does not access the data structure while another thread is
 modifying it.
 
-@node Portability Notes, Historical Notes, Reentrancy and Threading, Overview of cbase
+@node Portability Notes, , Reentrancy and Threading, Overview of cbase
 @comment  node-name,  next,  previous,  up
 @section Portability Notes
 
-This version of the library works with GNU/Linux (kernel 2.6.x) and
-Mac OS X 10.8 (``Mountain Lion''). It may work on other UNIX-based or
-UNIX-like platforms (e.g, Solaris, IRIX), but it has not been tested
-on such platforms for many years, on account of the general
-obsolescence of those platforms.
-
-The @code{dlsym()} family of functions are not available on very old
-versions of Mac OS X; however, an add-on library, @i{dlcompat}, is
-available that provides these functions; it may be found online.
+This version of the library works with recent versions of GNU/Linux
+and MacOS. It may work on other UNIX-based or UNIX-like platforms
+(e.g, Solaris, IRIX), but it has not been tested on such platforms for
+many years, on account of the general obsolescence of those platforms.
 
 The real-time scheduler is based on the POSIX.4 real-time signal
 facility. At the time this code was written, this facility was only
@@ -304,17 +290,6 @@ available on Solaris; it was broken on GNU/Linux and was not available at
 all on OS X. On the latter platforms, the event loop in the
 multi-threaded version of the library is therefore implemented using
 @code{nanosleep()} instead.
-
-@node Historical Notes, , Portability Notes, Overview of cbase
-@comment  node-name,  next,  previous,  up
-@section Historical Notes
-
-@i{Cbase} was previously known as @i{CFL}. Prior to that, it was known
-as @i{pingutil}, the @i{PING Utility Library}. These earlier names
-caused the library to be frequently confused with other projects. The
-final version of @i{CFL} was 1.2.9, and the first version of @i{cbase}
-is 1.3. With the exception of the names of the header files, the
-@i{cbase} API is identical to that of @i{CFL}.
 
 @node Types Macros and Constants, System Functions, Overview of cbase, Top
 @comment  node-name,  next,  previous,  up
@@ -416,6 +391,7 @@ The string @code{"\r\n"}, or carriage return and line feed.
 * Debugging and Tracing Functions::
 * Dynamic Linker Functions::
 * Error Handling Functions::
+* Exception Handling Functions::
 * Process Control Functions::
 * Filesystem Functions::
 * Mandatory File Locking Functions::
@@ -639,7 +615,7 @@ the loadable object @var{obj}.
 
 @end deftypefun
 
-@node Error Handling Functions, Process Control Functions, Dynamic Linker Functions, System Functions
+@node Error Handling Functions, Exception Handling Functions, Dynamic Linker Functions, System Functions
 @comment  node-name,  next,  previous,  up
 @section Error Handling Functions
 
@@ -723,6 +699,108 @@ value. Otherwise, it is defined as a function that simply assigns
 @var{err} to the global @i{int} variable @code{c_errno}.
 
 @end deftypefun
+
+@node Exception Handling Functions, Process Control Functions, Error Handling Functions, Top
+@comment  node-name,  next,  previous,  up
+@section Exception Handling Functions
+
+The cbase library provides a rudimentary form of exception handling built
+on top of the @code{setjmp()} and @code{longjmp()} library functions. This
+facility can be used to simplify error handling and avoid the use of
+@code{goto} statements to skip over logic once an error is encountered.
+
+Exceptions are @code{int} values. For improved readability, a program can
+define its exceptions as a set of integer constants or as an enumeration.
+
+@defmac C_try @{ ... @}
+@defmacx C_catch (@var{variable}) @{ ... @}
+@defmacx C_throw (@var{exception})
+
+These macros implement the customary `try', `catch', and `throw' exception
+handling statements.
+
+@code{C_try} introduces a @i{try} block, which is a new scope that must
+be enclosed in braces.
+
+The @i{try} block must be followed by a @i{catch} block, which is also a
+new scope that must be enclosed in braces.
+
+@code{C_catch} takes a single argument, @var{variable}, which is the name of a
+variable. Within the @i{catch} block, an @code{int} variable with that name
+will be assigned to the exception value that was thrown.
+
+@code{C_throw} throws the exception @var{exception}, which must be a
+non-zero integer. (If @var{exception} is 0, the behavior is
+undefined.) The stack is unwound to the topmost frame of the
+@i{try} block, all remaining logic in the @i{try} block is skipped,
+and control jumps to the beginning of the @i{catch} block.
+
+Attempting to @i{throw} or @i{catch} when there is no enclosing @i{try}
+block is a programming error, and results in an assertion.
+
+The library maintains a stack of exception contexts, so @i{try}/@i{catch}
+blocks can be nested to arbitrary depth.
+
+@end defmac
+
+@defmac C_throws (@var{exception}, ...)
+
+This macro may be used to annotate a function with the list of exceptions
+that it can potentially throw. This macro has no behavior; it is simply
+used as a documentation aid. For example:
+
+@example
+extern int some_function(int arg) C_throws(FILE_ERROR, IO_ERROR);
+@end example
+
+@end defmac
+
+The following code snippet illustrates the use of the exception handling
+macros. Note that in this example, the @code{open_file()} and
+@code{read_int_from_file()} functions, which are defined elsewhere, can
+potentially throw exceptions. Note also that in the case of an exception,
+the file still must be closed in the @i{catch} block to avoid a resource
+leak.
+
+@example
+const int FILE_ERROR = 1;
+const int IO_ERROR = 2;
+const int BAD_VALUE_ERROR = 3;
+
+extern FILE *open_file(const char *path) C_throws(FILE_ERROR);
+extern int read_int_from_file(FILE *fp) C_throws(IO_ERROR);
+extern void close_file(FILE *fp);
+
+C_try
+@{
+  FILE *fp;
+  int x;
+
+  fp = open_file("./data.txt");
+
+  x = read_int_from_file(fp);
+  if (x <= 0)
+    C_throw(BAD_VALUE_ERROR);
+
+  close_file();
+@}
+C_catch(exc)
+@{
+  close_file();
+
+  switch (exc)
+  @{
+    case FILE_ERROR:
+      printf("File error occurred.\n");
+      break;
+    case IO_ERROR:
+      printf("I/O error occurred.\n");
+      break;
+    case BAD_VALUE_ERROR:
+      printf("Invalid value read from file.\n");
+   @}
+@}
+@end example
 
 @node Process Control Functions, Filesystem Functions, Error Handling Functions, System Functions
 @comment  node-name,  next,  previous,  up
@@ -1776,7 +1854,7 @@ arguments is @code{NULL}) it returns @code{FALSE}.
 
 @end deftypefun
 
-@node Utility Functions, Data Structure Functions, System Functions, Top
+@node Utility Functions, Exception Handling Functions, System Functions, Top
 @comment  node-name,  next,  previous,  up
 @menu
 * Bitstring Functions::
@@ -2670,7 +2748,7 @@ This is a convenience macro. It is identical to @code{C_free_vec()}.
 
 @end defmac
 
-@node Data Structure Functions, XML Data Manipulation Functions, Utility Functions, Top
+@node Data Structure Functions, Real-Time Scheduler Functions, String Vector Functions, Top
 @comment  node-name,  next,  previous,  up
 @menu
 * Basic Data Types::
@@ -3764,232 +3842,7 @@ This function returns the length (in characters) of the dynamic string
 
 @end deftypefun
 
-@node XML Data Manipulation Functions, Real-Time Scheduler Functions, Data Structure Functions, Top
-@comment  node-name,  next,  previous,  up
-@chapter XML Data Manipulation Functions
-
-@tindex c_xml_document_t
-@tindex c_xml_element_t
-
-This chapter describes a simple, minimal API for manipulating XML
-data. These routines rely on the @i{expat} XML Parser Toolkit written by
-James Clark. See @url{http://sourceforge.net/projects/expat} for more
-information. Note that applications that use these functions must also
-link with the @i{expat} library.
-
-All of the functions described in this chapter are defined in the header
-@file{cbase/xml.h}.
-
-The type @i{c_xml_document_t} represents an XML document, and the type
-@i{c_xml_element_t} represents an XML element.
-
-@deftypefun {c_xml_document_t *} C_xml_document_create (@w{const char *@var{encoding}})
-@deftypefunx c_bool_t C_xml_document_destroy (@w{c_xml_document_t *@var{doc}})
-
-These functions create and destroy XML documents.
-
-@code{C_xml_document_create()} creates a new, empty XML document with
-the specified @i{encoding}. Currently only the ASCII and UTF-8 encodings are
-supported, therefore @samp{us-ascii} or @samp{utf-8} should be passed as the value of
-@var{encoding}. The function returns a pointer to the newly created
-@i{c_xml_document_t} structure.
-
-@code{C_xml_document_destroy()} destroys the XML document @var{doc}. All
-of the elements in the document are recursively destroyed, and then the
-document itself is destroyed. All memory associated with the document is
-deallocated. The function returns @code{TRUE} on success, or
-@code{FALSE} on failure (for example, if @var{doc} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun {c_xml_element_t *} C_xml_element_create (@w{const char *@var{name}})
-@deftypefunx c_bool_t C_xml_element_destroy (@w{c_xml_element_t *@var{elem}})
-@deftypefunx c_bool_t C_xml_element_destroy_recursive (@w{c_xml_element_t *@var{elem}})
-
-@end deftypefun
-
-These methods create and destroy XML elements.
-
-@code{C_xml_element_create()} creates a new element with the specified
-@var{name}. It returns a pointer to the newly created
-@var{c_xml_element_t} structure.
-
-@code{C_xml_element_destroy()} destroys the specified element
-@var{elem}, deallocating all memory associated with that
-element. @code{C_xml_element_destroy_recursive()} is similar, but it
-additionally recursively destroys all child elements of
-@var{elem}. These functions return @code{TRUE} on success or
-@code{FALSE} on failure (for example, if @var{elem} is @code{NULL}).
-
-@deftypefun c_bool_t C_xml_document_set_root (@w{c_xml_document_t *@var{doc}}, @w{c_xml_element_t *@var{root}})
-@deftypefunx {c_xml_element_t *} C_xml_document_get_root (@w{c_xml_document_t *@var{doc}})
-
-These functions set and get the root element of the XML document @var{doc}.
-
-@code{C_xml_document_set_root()} sets the root element of the document
-@var{doc} to @var{root}. The argument @var{root} may be @code{NULL} to
-effectively ``empty'' the document. The function returns @code{TRUE} on
-success or @code{FALSE} on failure (for example, if @var{doc} is
-@code{NULL}).
-
-If the document had an existing root element, the tree of elements
-rooted at that root element becomes orphaned; therefore, it is necessary
-in this case to call @code{C_xml_element_destroy_recursive()} on the old root
-element to reclaim the memory used by that tree before setting a new
-root element.
-
-@code{C_xml_document_get_root()} returns the root element of the
-document @var{doc}, or @code{NULL} if the document is empty.
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_set_content (@w{c_xml_element_t *@var{elem}}, @w{const char *@var{content}})
-@deftypefunx {const char *} C_xml_element_get_content (@w{c_xml_element_t *@var{elem}})
-
-These functions set and get the content for the XML element @var{elem}.
-
-@code{C_xml_element_set_content()} sets the content of @var{elem} to
-@var{content}. The string @var{content} is duplicated in memory, so it
-does not need to be dynamically allocated by the caller. Any existing
-content for @var{elem} is removed and deallocated. The argument
-@var{content} may be @code{NULL} to delete any existing content. The
-function returns @code{TRUE} on success or @code{FALSE} on failure (for
-example, if @var{elem} is @code{NULL}).
-
-@code{C_xml_element_get_content()} returns the content for the XML
-element @var{elem}, or @code{NULL} if the element has no content or upon
-failure (for example, if @var{elem} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_set_param (@w{c_xml_element_t *@var{elem}}, @w{const char *@var{param}}, @w{const char *@var{value}})
-@deftypefunx {const char *} C_xml_element_get_param (@w{c_xml_element_t *@var{elem}}, @w{const char *@var{param}})
-
-These functions set and get parameters for the XML element @var{elem}.
-
-@code{C_xml_element_set_param()} sets the parameter named @var{param} to
-the value @var{value} in the element @var{elem}, replacing any existing
-value for that parameter. The function returns @code{TRUE} on success,
-or @code{FALSE} on failure (for example, if @var{elem}, @var{param}, or
-@var{value} is @code{NULL}).
-
-@code{C_xml_element_get_param()} gets the value of the parameter named
-@var{param} in the element @var{elem}. It returns the value of the
-parameter on success, or @code{NULL} on failure (for example, if a
-parameter named @var{param} does not exist in the element, or if
-@var{elem} or @var{param} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_delete_param (@w{c_xml_element_t *@var{elem}}, @w{const char *@var{param}})
-@deftypefunx c_bool_t C_xml_element_delete_params (@w{c_xml_element_t *@var{elem}})
-
-These functions delete parameters from the XML element @var{elem}.
-
-@code{C_xml_element_delete_param()} deletes the parameter named
-@var{param} from the element
-@var{elem}. @code{C_xml_element_delete_params()} deletes all parameters
-from the element @var{elem}.
-
-These functions return @code{TRUE} on success or @code{FALSE} on failure
-(for example, if a parameter named @var{param} does not exist in the
-element, or if @var{elem} or @var{param} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun {c_xml_element_t **} C_xml_element_get_children (@w{c_xml_element_t *@var{parent}})
-@deftypefunx {c_xml_element_t **} C_xml_element_get_children_named (@w{c_xml_element_t *@var{parent}}, @w{const char *@var{name}})
-
-These functions return a list of child elements of the specified XML
-element @var{parent}.
-
-@code{C_xml_element_get_children()} returns a list of the child elements
-of the element @var{parent}. @code{C_xml_element_get_children_named()}
-returns a list of the child elements of the element @var{parent} that are
-named @var{name}.
-
-On success, the functions return a dynamically allocated, possibly
-empty, @code{NULL}-terminated array of pointers to @i{c_xml_element_t}
-structures.  This array must be eventually freed by the caller via a
-call to @code{C_free_vec()}. On failure, they return @code{NULL} (for
-example, if @var{parent} or @var{name} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun {c_xml_element_t *} C_xml_element_get_first_child (@w{c_xml_element_t *@var{parent}})
-
-This function returns the first child element of the element
-@var{parent}, or @code{NULL} if @var{parent} has no children or on
-failure (for example if @var{parent} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun {c_xml_element_t *} C_xml_element_get_first_child_named (@w{c_xml_element_t *@var{parent}}, @w{const char *@var{name}})
-
-This function returns the first child element of the element
-@var{parent} that is named @var{name}, or @code{NULL} if no such
-element exists or on failure (for example, if @var{parent} or
-@var{name} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_add_child (@w{c_xml_element_t *@var{parent}}, @w{c_xml_element_t *@var{elem}})
-
-This function adds a new child element to the XML element
-@var{parent}. Child elements can only be added to a parent element that
-does not have any content. An element cannot be added as a child of
-itself. The function returns @code{TRUE} on success, or @code{FALSE} on
-failure (for example, if @var{parent} or @var{elem} is @code{NULL}, or
-if one of the constraints described above is violated).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_remove_child (@w{c_xml_element_t *@var{parent}}, @w{c_xml_element_t *@var{elem}})
-
-This function removes the specified element @var{elem} from the parent
-element @var{parent}. The element tree rooted at @var{elem} is
-destroyed.  The function returns @code{TRUE} on success, or @code{FALSE}
-on failure (for example, if @var{parent} or @var{elem} is @code{NULL},
-or if @var{elem} is not a child of @var{parent}).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_element_remove_children (@w{c_xml_element_t *@var{parent}})
-@deftypefunx c_bool_t C_xml_element_remove_children_named (@w{c_xml_element_t *@var{parent}}, @w{const char *@var{name}})
-
-These functions remove multiple child elements from the parent element
-@var{parent}. The element tree rooted at each removed child element is
-destroyed.
-
-@code{C_xml_element_remove_children()} removes all children from the
-parent element @var{elem}. @code{C_xml_element_remove_children_named()}
-removes all children from the parent element @var{elem} that are named
-@var{name}.
-
-These functions return @code{TRUE} on success, or @code{FALSE} on
-failure (for example, if @var{parent} or @var{name} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun c_bool_t C_xml_document_read (@w{c_xml_document_t *@var{doc}}, @w{FILE *@var{fp}})
-@deftypefunx c_bool_t C_xml_document_write (@w{c_xml_document_t *@var{doc}}, @w{FILE *@var{fp}})
-
-These functions read and write XML documents to and from files.
-
-@code{C_xml_document_read()} reads XML data from the file @var{fp} into
-the (presumably empty) document @var{doc}. It returns @code{TRUE} on
-success, or @code{FALSE} on failure (for example, if @var{fp} or
-@var{doc} is @code{NULL}, if an I/O error occurred, or if the XML parser
-reported an error).
-
-@code{C_xml_document_write()} writes the XML document @var{doc} to the
-file @var{fp}. It returns @code{TRUE} on success, or @code{FALSE} on
-failure (for example, if @var{doc} or @var{fp} is @code{NULL}, or if an
-I/O error occurred).
-
-@end deftypefun
-
-@node Real-Time Scheduler Functions, IPC Functions, XML Data Manipulation Functions, Top
+@node Real-Time Scheduler Functions, IPC Functions, Data Structure Functions, Top
 @comment  node-name,  next,  previous,  up
 @menu
 * Scheduler Control Functions::
@@ -4630,7 +4483,7 @@ device file for the slave device associated with the pseudoterminal
 
 @end deftypefun
 
-@node Networking Functions, Miscellaneous Functions, IPC Functions, Top
+@node Networking Functions, Library Information Functions, IPC Functions, Top
 @comment  node-name,  next,  previous,  up
 @menu
 * Network Information Functions::
@@ -5638,237 +5491,9 @@ and @code{C_socket_recvline()} functions, described above, ignoring the
 
 @end deftypefun
 
-@node Miscellaneous Functions, References, Networking Functions, Top
+@node Library Information Functions, References, Networking Functions, Top
 @comment  node-name,  next,  previous,  up
-@menu
-* Fortune Database Functions::
-* HTTP Functions::
-* Library Information Functions::
-@end menu
-@chapter Miscellaneous Functions
-
-This chapter discusses some miscellaneous functions.
-
-@node Fortune Database Functions, HTTP Functions, , Miscellaneous Functions
-@comment  node-name,  next,  previous,  up
-@section Fortune Database Functions
-
-The functions described in this section provide a simple API to UNIX
-fortune databases. A @dfn{fortune database} consists of a text file
-containing segments of text (``fortunes'') demarcated by lines
-containing only a percent (@samp{%}) character, and a binary index file
-containing the offsets of consecutive fortunes in the text file, each
-offset being a 4-byte unsigned integer in network byte order.
-
-All of the functions described in this chapter are defined in the header
-@file{cbase/fortune.h}.
-
-@tindex c_fortune_db_t
-The type @i{c_fortune_db_t} represents a fortune database.
-
-@deftypefun c_bool_t C_fortune_indexdb (@w{const char *@var{basename}})
-
-This function rebuilds the index file for the fortune file
-@var{basename}. The index file will be created in the same directory as
-the source file, with the same name as the source file plus an
-@file{.idx} extension.
-
-The function returns @code{TRUE} on success and @code{FALSE} on failure.
-
-@end deftypefun
-
-@deftypefun {c_fortune_db_t *} C_fortune_opendb (@w{const char *@var{basename}})
-@deftypefunx c_bool_t C_fortune_closedb (@w{c_fortune_db_t *@var{db}})
-
-These functions open and close fortune databases.
-
-@code{C_fortune_opendb()} opens the fortune database specified by
-@var{basename} and returns a handle to the database on success, or
-@code{NULL} on failure (for example, if either the text or index file
-does not exist or can't be read).
-
-@code{C_fortune_closedb()} closes the fortune database @var{db},
-deallocating all memory and closing all file descriptors associated with
-the database. The function returns @code{TRUE} on success or
-@code{FALSE} on failure (for example, if @var{db} is @code{NULL}).
-
-@end deftypefun
-
-@deftypefun {const char *} C_fortune_select (@w{c_fortune_db_t *@var{db}})
-
-This function selects a fortune at random from the fortune database
-@var{db}. The fortune is returned in a dynamically allocated buffer
-which must be freed by the caller. On failure (for example, if @var{db}
-is @code{NULL} or if an I/O error occurred) the function returns
-@code{NULL}.
-
-@end deftypefun
-
-@node HTTP Functions, Library Information Functions, Fortune Database Functions, Miscellaneous Functions
-@comment  node-name,  next,  previous,  up
-@section HTTP Functions
-
-The following functions provide a very basic HTTP server
-implementation. This implementation currently only supports the ``GET''
-method. This API is still evolving and should be considered ``experimental.''
-
-@tindex c_httpsrv_t
-
-The type @i{c_httpsrv_t} represents an HTTP server instance. Multiple
-instances can coexist in the same process, but each must be listening on
-a different port.
-
-@tindex c_httpsrv_handler_t
-
-The type @i{c_httpsrv_handler_t} represents an HTTP request handler. It
-has the following prototype:
-
-@deftypefun void http_handler (@w{c_socket_t *@var{socket}}, @w{const char *@var{uri}}, @w{c_hashtable_t *@var{params}})
-
-The @var{socket} represents the connection to the client, @var{uri} is
-the URI for the request, and @var{params} is the set of HTTP parameters
-parsed from the query string following the URI (if any); @var{params}
-may be @code{NULL} if no parameters were passed.
-
-Before sending data through the socket, the handler should call the
-functions @code{C_httpsrv_send_status()} and
-@code{C_httpsrv_send_headers()}, in that order, to send the appropriate
-response status code and HTTP headers to the client.
-
-@end deftypefun
-
-@tindex c_http_param_t
-
-The type @i{c_http_param_t} represents an HTTP parameter. An HTTP
-parameter may have one value or an array of two or more values.
-
-@deftypefun {c_httpsrv_t *} C_httpsrv_create (@w{in_port_t @var{port}}, @w{int @var{max_workers}}, @w{int @var{timeout}})
-
-This function creates a new HTTP server. The server will listen for
-connections on the given TCP @var{port}. The argument @var{max_workers}
-specifies the number of worker threads to spawn (in the threaded version
-of the library) to handle incoming connections. The timeout for socket I/O, in seconds, is specified as @var{timeout}.
-
-The function returns the newly created @i{c_httpsrv_t} object on success, or @code{NULL} on failure.
-
-@end deftypefun
-
-@deftypefun void C_httpsrv_destroy (@w{c_httpsrv_t *@var{srv}})
-
-This function destroys the HTTP server @var{srv}. It shuts down the
-server and deallocates all memory associated with it.
-
-@end deftypefun
-
-@deftypefun void C_httpsrv_add_handler (@w{c_httpsrv_t *@var{srv}}, @w{const char *@var{uri}}, @w{c_httpsrv_handler_t @var{handler}})
-@deftypefunx void C_httpsrv_remove_handler (@w{c_httpsrv_t *@var{srv}}, @w{const char *@var{uri}})
-
-These functions add and remove request handlers for the HTTP server
-@var{srv}.
-
-@code{C_httpsrv_add_handler()} associates the given @var{handler}
-function with the URI @var{uri}, replacing any handler currently
-associated with that URI. HTTP requests for the given URI will be routed
-to this handler.
-
-@code{C_httpsrv_remove_handler()} removes the handler associated with
-the URI @var{uri}, if any.
-
-@end deftypefun
-
-@deftypefun void C_httpsrv_set_default_handler (@w{c_httpsrv_t *@var{srv}}, @w{c_httpsrv_handler_t @var{handler}})
-
-This functions sets the default request @var{handler} for the HTTP
-server @var{srv}. This handler will be invoked for any URI that is not
-associated with any other handler. Passing @code{NULL} for @var{handler}
-removes the default handler.
-
-@end deftypefun
-
-@deftypefun c_bool_t C_httpsrv_accept (@w{c_httpsrv_t *@var{srv}})
-
-This function accepts the next pending connection for the HTTP server
-@var{srv} and processes the request. It returns @code{TRUE} if the
-request was handled successfully and @code{FALSE} otherwise.
-
-@end deftypefun
-
-@deftypefun c_bool_t C_httpsrv_send_status (@w{c_socket_t @var{s}}, @w{int @var{status}}, @w{c_bool_t @var{errmsg}})
-@deftypefunx c_bool_t C_httpsrv_send_headers (@w{c_socket_t *@var{s}}, @w{const char *@var{mime_type}}, @w{long @var{content_length}})
-
-These functions send an HTTP response status and headers to the client
-connected on the socket @var{s}. They are meant to be used from within a
-request handler function, and should be called before any data is sent
-back to the client over the socket.
-
-@code{C_httpsrv_send_status()} sends a status line back to the
-client. The @var{status} is a numeric value which must be a valid HTTP
-status code. The following table enumerates some of the more common
-HTTP status codes.
-
-@sp 1
-
-@multitable @columnfractions .1 .8
-@item @b{Code} @tab @code{Meaning}
-@item @code{200} @tab OK
-@item @code{400} @tab Bad Request
-@item @code{403} @tab Forbidden
-@item @code{404} @tab Not Found
-@item @code{408} @tab Request Timed Out
-@item @code{500} @tab Internal Server Error
-@item @code{501} @tab Not Implemented
-@item @code{503} @tab Server Busy
-@end multitable
-
-@sp 1
-
-If @var{errmsg} is @code{TRUE}, an appropriate HTML-formatted error
-message is sent back to the client as the content of the message. In
-this case, it is not necessary to call @code{C_httpsrv_send_headers()}.
-
-@code{C_httpsrv_send_headers()} sends the mandatory @samp{Content-Type}
-and the optional @samp{Content-Length} headers to the client, followed
-by a blank line. The argument @var{mime_type} specifies the value for
-the @samp{Content-Type} header. It may not be @code{NULL}. The argument
-@var{content_length} specifies the value for the @samp{Content-Length}
-header. If @var{content_length} is negative, the header will not be
-sent.
-
-Both functions return @code{TRUE} on success and @code{FALSE} on failure.
-
-@end deftypefun
-
-@deftypefun {c_http_param_t *} C_http_param_get (@w{c_hashtable_t *@var{params}}, @w{const char *@var{key}})
-
-This function retrieves the HTTP parameter named @var{key} from the
-parameter list @var{params}. It returns the parameter on success, or
-@code{NULL} if the parameter does not exist. The accessor functions
-described below may be used to retrieve the value(s) of the parameter.
-
-@end deftypefun
-
-@deftypefun c_bool_t C_http_param_isarray (@w{c_http_param_t *@var{param}})
-@deftypefunx {const char *} C_http_param_value (@w{c_http_param_t *@var{param}})
-@deftypefunx {c_linklist_t *} C_http_param_values (@w{c_http_param_t *@var{param}})
-
-@code{C_http_param_isarray()} determines if the HTTP parameter
-@var{param} has an array of values or a single value.
-
-@code{C_http_param_value()} returns the single value of the HTTP
-parameter @var{param}, or, if the parameter has an array of values, the
-first value in the array.
-
-@code{C_http_param_values()} returns the array of values for the HTTP
-parameter @var{param} as a linked list, or @code{NULL} if the parameter
-does not have an array of values.
-
-These functions are implemented as macros.
-
-@end deftypefun
-
-@node Library Information Functions, , HTTP Functions, Miscellaneous Functions
-@comment  node-name,  next,  previous,  up
-@section Library Information Functions
+@chapter Library Information Functions
 
 The following functions provide runtime information about the cbase
 library itself. All of the functions described in this chapter are
@@ -5893,15 +5518,15 @@ address, and copyright.
 @deftypefun {const char **} C_library_options (void)
 
 This function returns a @code{NULL}-terminated array of strings which
-represent the set of options that are enabled in the library. Currently
-only the following options are defined: @samp{xml} (if the XML functions
-are available) and @samp{threaded} (if the multi-threaded version of the
-library is in use).
+represent the set of options that are enabled in the
+library. Currently only the following option is defined:
+@samp{threaded} (if the multi-threaded version of the library is in
+use).
 
 @end deftypefun
 
 
-@node References, License, Miscellaneous Functions, Top
+@node References, License, Library Information Functions, Top
 @comment  node-name,  next,  previous,  up
 @appendix References
 

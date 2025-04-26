@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
    cbase - A C Foundation Library
-   Copyright (C) 1994-2014  Mark A Lindner
+   Copyright (C) 1994-2025  Mark A Lindner
 
    This file is part of cbase.
 
@@ -51,8 +51,7 @@ c_bool_t C_file_readdir(const char *path, c_dirlist_t *dir, int flags)
   char *p, *buf, *z;
   struct stat st;
   DIR *dp;
-  struct dirent *de, *rde;
-  int sz;
+  struct dirent *de;
 
   if(!path || !dir)
     return(FALSE);
@@ -64,20 +63,13 @@ c_bool_t C_file_readdir(const char *path, c_dirlist_t *dir, int flags)
   strcat(buf, "/");
   z = buf + strlen(buf);
 
-  sz = sizeof(struct dirent) + pathconf(".", _PC_NAME_MAX) + 1;
-
   vf = C_vector_start(C_FILE_BLOCKSZ);
   if(flags & C_FILE_SEPARATE)
     vd = C_vector_start(C_FILE_BLOCKSZ);
   dir->nfiles = dir->ndirs = 0;
 
-  de = (struct dirent *)C_malloc(sz, c_byte_t);
-
-  while(readdir_r(dp, de, &rde) == 0)
+  while((de = readdir(dp)) != NULL)
   {
-    if(! rde)
-      break;
-
     strcpy(z, de->d_name);
 
     if(lstat(buf, &st))
@@ -151,9 +143,8 @@ static c_bool_t __C_file_descend(const char *path,
   const char *opath = NULL;
   struct stat fst;
   DIR *dp;
-  struct dirent *de, *rde;
+  struct dirent *de;
   c_bool_t r = TRUE;
-  int sz;
 
   if(!(opath = C_file_getcwd())) return(FALSE);
 
@@ -165,15 +156,8 @@ static c_bool_t __C_file_descend(const char *path,
 
   if((dp = opendir(".")))
   {
-    sz = sizeof(struct dirent) + pathconf(".", _PC_NAME_MAX) + 1;
-
-    de = (struct dirent *)C_malloc(sz, c_byte_t);
-
-    while((readdir_r(dp, de, &rde) == 0))
+    while((de = readdir(dp)) != NULL)
     {
-      if(! rde)
-        break;
-
       if(!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
         continue;
       lstat(de->d_name, &fst);
