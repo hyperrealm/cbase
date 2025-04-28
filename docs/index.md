@@ -1,4 +1,4 @@
-## About
+## cbase (C Foundation Library)
 
 *Cbase* is a C library of useful functions that simplify systems 
 software development on System V UNIX. The library includes routines for 
@@ -29,5 +29,5 @@ Download *cbase* now! Source code and full documentation are
 included.
 
 <center>
-<a href="dist/cbase-1.3.7.tar.gz"><b>cbase-1.3.7.tar.gz</b></a>
+<a href="dist/cbase-1.4.tar.gz"><b>cbase-1.4.tar.gz</b></a>
 </center>
