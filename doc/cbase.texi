@@ -782,7 +782,7 @@ C_try
   if (x <= 0)
     C_throw(BAD_VALUE_ERROR);
 
-  close_file();
+  close_file(fp);
 @}
 C_catch(exc)
 @{
