@@ -1,5 +1,3 @@
-## About
-
 *Cbase* is a C library of useful functions that simplify systems 
 software development on System V UNIX. The library includes routines for 
 memory management, string parsing, filesystem traversal, subprocess 
